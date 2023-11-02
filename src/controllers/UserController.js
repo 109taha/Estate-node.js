@@ -108,14 +108,33 @@ const updateUser = async (req, res) => {
 
 const allUser = async (req, res) => {
   try {
-    const user = await User.find();
-    if (user.length <= 0) {
-      return res.status(400).send({ success: false, message: "No user found" });
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const skip = (page - 1) * limit;
+    const total = await User.countDocuments();
+
+    let sortBY = { createdAt: -1 };
+    if (req.query.sort) {
+      sortBY = JSON.parse(req.query.sort);
     }
-    return res.status(200).send({
+
+    const users = await User.find().skip(skip).limit(limit).sort(sortBY);
+    if (users.lenght <= 0) {
+      return res
+        .status(400)
+        .send({ success: false, message: "No users Found" });
+    }
+
+    const totalPages = Math.ceil(total / limit);
+
+    res.status(200).send({
       success: true,
-      message: "All User",
-      Data: user,
+      message: "Following are the all Users",
+      Data: users,
+      page,
+      totalPages,
+      limit,
+      total,
     });
   } catch (error) {
     console.error(error);
@@ -127,6 +146,19 @@ const allUser = async (req, res) => {
 
 const oneUser = async (req, res) => {
   try {
+    const userId = req.params.Id;
+    const users = await User.findById(userId);
+    if (!users) {
+      return res
+        .status(400)
+        .send({ success: false, message: "No users Found" });
+    }
+
+    res.status(200).send({
+      success: true,
+      message: "Following are the Users",
+      Data: users,
+    });
   } catch (error) {
     console.error(error);
     return res
@@ -137,6 +169,12 @@ const oneUser = async (req, res) => {
 
 const deleteUser = async (req, res) => {
   try {
+    const userId = req.params.Id;
+    const user = await User.findByIdAndDelete(userId);
+
+    res
+      .status(200)
+      .send({ success: true, message: "User deleted successfully" });
   } catch (error) {
     console.error(error);
     return res
@@ -144,6 +182,7 @@ const deleteUser = async (req, res) => {
       .send({ success: false, message: "Internal server error" });
   }
 };
+
 module.exports = {
   registeredUser,
   loginUser,
