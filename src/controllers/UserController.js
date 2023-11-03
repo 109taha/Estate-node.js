@@ -2,6 +2,7 @@ const User = require("../models/UsersModels");
 const Broker = require("../models/BrokerModel");
 const JWT = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const { userSchema } = require("../utils/Schemas");
 
 const registeredUser = async (req, res) => {
   try {
