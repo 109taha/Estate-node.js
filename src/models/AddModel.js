@@ -7,6 +7,10 @@ const AddSchema = new mongoose.Schema(
       required: true,
       maxlength: 50,
     },
+    address: {
+      type: String,
+      required: true,
+    },
     description: {
       type: String,
       required: true,
@@ -17,26 +21,12 @@ const AddSchema = new mongoose.Schema(
       required: true,
       min: 0,
     },
-    propertyDetails: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Details",
-      require: true,
-    },
-    feature: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Features",
-      require: true,
-    },
-    floorPlans: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "FloorPlans",
-      require: true,
-    },
-
-    address: {
-      type: String,
-      maxlength: 100,
-    },
+    pics: [
+      {
+        type: String,
+        require: true,
+      },
+    ],
     city: {
       type: String,
       required: true,
@@ -46,6 +36,10 @@ const AddSchema = new mongoose.Schema(
       type: String,
       required: true,
       maxlength: 50,
+    },
+    size: {
+      type: String,
+      require: true,
     },
     rooms: {
       type: Number,
@@ -57,6 +51,28 @@ const AddSchema = new mongoose.Schema(
       required: true,
       min: 1,
     },
+    garage: {
+      type: Boolean,
+      require: true,
+    },
+    garageSize: {
+      type: String,
+      require: true,
+    },
+    propertyType: {
+      type: String,
+      require: true,
+    },
+    yearBuilt: {
+      type: String,
+      require: true,
+    },
+    floorPlans: [
+      {
+        type: String,
+        require: true,
+      },
+    ],
     createdByUser: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -65,17 +81,22 @@ const AddSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Broker",
     },
-    location: {
-      latitude: {
-        type: Number,
-        required: true,
+    feature: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Feature",
       },
-      longitude: {
-        type: Number,
-        required: true,
-      },
+    ],
+    latitude: {
+      type: Number,
+      required: true,
+    },
+    longitude: {
+      type: Number,
+      required: true,
     },
   },
+
   {
     timestamps: true,
   }
