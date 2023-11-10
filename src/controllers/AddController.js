@@ -5,10 +5,9 @@ const Feature = require("../models/FeatureModel");
 const FloorPlans = require("../models/FloorPlanModel");
 
 const createAdd = async (req, res) => {
-  const files = req.files.pics;
-  const attachments = req.files.floorPlans;
+  const files = req.files;
   const attachArtwork = [];
-  const attached = [];
+
   try {
     if (!files || files?.length < 1)
       return res.status(401).json({
@@ -31,42 +30,17 @@ const createAdd = async (req, res) => {
         console.log(err);
       }
     }
-    if (!attachments || attachments?.length < 1)
-      return res.status(401).json({
-        success: false,
-        message: "You have to upload at least one image to the listing",
-      });
-    for (const attachment of attachments) {
-      const { path } = attachment;
-      try {
-        const uploader = await cloudinary.uploader.upload(path, {
-          folder: "Estate",
-        });
-        attached.push({ url: uploader.secure_url });
-        fs.unlinkSync(path);
-      } catch (err) {
-        if (attached?.length) {
-          const imgs = imgObjs.map((obj) => obj.public_id);
-          cloudinary.api.delete_resources(imgs);
-        }
-        console.log(err);
-      }
-    }
+
     let pics = [];
     for (let i = 0; i < attachArtwork.length; i++) {
       const element = attachArtwork[i].url;
       pics.push(element);
     }
-    let floorPlans = [];
-    for (let i = 0; i < attached.length; i++) {
-      const element = attached[i].url;
-      floorPlans.push(element);
-    }
+
     const newAddData = req.body;
     const newAdd = await Add({
       ...newAddData,
       pics,
-      floorPlansPics: floorPlans,
     });
 
     newAdd.save();
@@ -79,6 +53,42 @@ const createAdd = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(400).send({ success: false, message: "Internal server error`" });
+    throw error;
+  }
+};
+
+const getAdd = async (req, res) => {
+  try {
+    const allAdds = await Add.find().populate(
+      "floorPlans createdByAgent feature"
+    );
+
+    if (allAdds <= 0) {
+      return res.status(400).send({ success: false, message: "No Adds found" });
+    }
+    res.status(200).send({
+      success: true,
+      message: "Following are all the Adds",
+      data: allAdds,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(400).send({ success: false, message: "Internal server error" });
+    throw error;
+  }
+};
+
+const deleteAdd = async (req, res) => {
+  try {
+    const allAdds = await Add.findByIdAndDelete(req.params.Id);
+
+    res.status(200).send({
+      success: true,
+      message: "Add deleted sucessfully",
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(400).send({ success: false, message: "Internal server error" });
     throw error;
   }
 };
@@ -127,6 +137,26 @@ const createFloorPlan = async (req, res) => {
   }
 };
 
+const getFloorPlan = async (req, res) => {
+  try {
+    const allFloorPlan = await FloorPlans.find();
+    if (allFloorPlan <= 0) {
+      return res
+        .status(400)
+        .send({ success: false, message: "No floorPlan found" });
+    }
+    res.status(200).send({
+      success: true,
+      message: "Following are all the Floor Plans",
+      data: allFloorPlan,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(400).send({ success: false, message: "Internal server error" });
+    throw error;
+  }
+};
+
 const CreateFeature = async (req, res) => {
   try {
     const feature = req.body.feature;
@@ -167,4 +197,12 @@ const allFeature = async (req, res) => {
   }
 };
 
-module.exports = { createAdd, createFloorPlan, CreateFeature, allFeature };
+module.exports = {
+  createAdd,
+  getAdd,
+  deleteAdd,
+  createFloorPlan,
+  getFloorPlan,
+  CreateFeature,
+  allFeature,
+};
