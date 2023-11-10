@@ -27,50 +27,63 @@ const AddSchema = new mongoose.Schema(
         require: true,
       },
     ],
-    city: {
-      type: String,
-      required: true,
-      maxlength: 50,
+    location: {
+      city: {
+        type: String,
+        required: true,
+        maxlength: 50,
+      },
+      country: {
+        type: String,
+        required: true,
+        maxlength: 50,
+      },
+      latitude: {
+        type: Number,
+        required: true,
+      },
+      longitude: {
+        type: Number,
+        required: true,
+      },
     },
-    country: {
-      type: String,
-      required: true,
-      maxlength: 50,
-    },
-    size: {
-      type: String,
-      require: true,
-    },
-    rooms: {
-      type: Number,
-      required: true,
-      min: 1,
-    },
-    washRooms: {
-      type: Number,
-      required: true,
-      min: 1,
-    },
-    garage: {
-      type: Boolean,
-      require: true,
-    },
-    garageSize: {
-      type: String,
-      require: true,
-    },
-    propertyType: {
-      type: String,
-      require: true,
-    },
-    yearBuilt: {
-      type: String,
-      require: true,
+    propertyDetail: {
+      size: {
+        type: String,
+        require: true,
+      },
+      rooms: {
+        type: Number,
+        required: true,
+        min: 1,
+      },
+      washRooms: {
+        type: Number,
+        required: true,
+        min: 1,
+      },
+      garage: {
+        type: Boolean,
+        require: true,
+      },
+      garageSize: {
+        type: String,
+        require: true,
+      },
+
+      propertyType: {
+        type: String,
+        require: true,
+      },
+      yearBuilt: {
+        type: String,
+        require: true,
+      },
     },
     floorPlans: [
       {
-        type: String,
-        require: true,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "FloorPlans",
       },
     ],
     createdByUser: {
@@ -87,14 +100,6 @@ const AddSchema = new mongoose.Schema(
         ref: "Feature",
       },
     ],
-    latitude: {
-      type: Number,
-      required: true,
-    },
-    longitude: {
-      type: Number,
-      required: true,
-    },
   },
 
   {
