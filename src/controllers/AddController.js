@@ -59,9 +59,24 @@ const createAdd = async (req, res) => {
 
 const getAdd = async (req, res) => {
   try {
-    const allAdds = await Add.find().populate(
-      "floorPlans createdByAgent feature"
-    );
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const skip = (page - 1) * limit;
+
+    let sortBY = { createdAt: -1 };
+    if (req.query.sort) {
+      sortBY = JSON.parse(req.query.sort);
+    }
+
+    const total = await Add.countDocuments();
+
+    const allAdds = await Add.find()
+      .select("pics address description price name")
+      .skip(skip)
+      .limit(limit)
+      .sort(sortBY);
+
+    const totalPages = Math.ceil(total / limit);
 
     if (allAdds <= 0) {
       return res.status(400).send({ success: false, message: "No Adds found" });
@@ -70,6 +85,32 @@ const getAdd = async (req, res) => {
       success: true,
       message: "Following are all the Adds",
       data: allAdds,
+      page,
+      totalPages,
+      limit,
+      total,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(400).send({ success: false, message: "Internal server error" });
+    throw error;
+  }
+};
+
+const getOne = async (req, res) => {
+  try {
+    const oneAdd = await Add.findById(req.params.Id).populate(
+      "floorPlans createdByUser createdByAgent feature"
+    );
+    if (!oneAdd) {
+      return res
+        .status(400)
+        .send({ success: false, message: "No add found on that Id" });
+    }
+    res.status(200).send({
+      success: true,
+      message: "Following are that One add which you want to see",
+      data: oneAdd,
     });
   } catch (error) {
     console.error(error);
@@ -200,6 +241,7 @@ const allFeature = async (req, res) => {
 module.exports = {
   createAdd,
   getAdd,
+  getOne,
   deleteAdd,
   createFloorPlan,
   getFloorPlan,

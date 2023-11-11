@@ -32,25 +32,30 @@ const BorkerJoi = (req, res, next) => {
   }
 };
 
-const AddSchema = joi.object({
-  name: joi
-    .string()
-    .pattern(/^[a-f\d]{24}$/i)
-    .required(),
-  description: joi
-    .string()
-    .pattern(/^[a-f\d]{500}$/i)
-    .required(),
-  price: joi.number().required().min(1940).max(9999999999999999999999999999),
-  address: joi.string(),
-  city: joi.string(),
-  country: joi.string(),
-  rooms: joi.number().required().min(1).max(50),
-  washRooms: joi.number().required().min(1).max(50),
-  createdByUser: joi.string(),
-  createdByAgent: joi.string(),
-  location: joi.string(),
-});
+const AddSchema = joi
+  .object({
+    name: joi.string().required().max(50),
+    address: joi.string().required(),
+    description: joi.string().required().max(500),
+    price: joi.number().required().min(0),
+    pics: joi.array().items(joi.string().required()),
+    location: joi.object({
+      city: joi.string().required().max(50),
+      country: joi.string().required().max(50),
+      latitude: joi.number().required(),
+      longitude: joi.number().required(),
+    }),
+    propertyDetail: joi.object({
+      size: joi.string().required(),
+      rooms: joi.number().required().min(1),
+      washRooms: joi.number().required().min(1),
+      garage: joi.boolean().required(),
+      garageSize: joi.string().required(),
+      propertyType: joi.string().required(),
+      yearBuilt: joi.string().required(),
+    }),
+  })
+  .unknown(true);
 
 const AddJoi = (req, res, next) => {
   const { error } = AddSchema.validate(req.body, { abortEarly: false });
@@ -61,4 +66,24 @@ const AddJoi = (req, res, next) => {
   }
 };
 
-module.exports = { AddJoi, UserJoi, BorkerJoi };
+const floorPlansValidationSchema = joi
+  .object({
+    totalSize: joi.number(),
+    roomSize: joi.number(),
+    washroomSize: joi.number(),
+    prices: joi.number(),
+  })
+  .unknown(true);
+
+const floorPlansJoi = (req, res, next) => {
+  const { error } = floorPlansValidationSchema.validate(req.body, {
+    abortEarly: false,
+  });
+  if (error) {
+    return res.status(400).json({ error });
+  } else {
+    next();
+  }
+};
+
+module.exports = { AddJoi, UserJoi, floorPlansJoi, BorkerJoi };
