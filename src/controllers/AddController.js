@@ -57,6 +57,79 @@ const createAdd = async (req, res) => {
   }
 };
 
+const updateAdd = async (req, res) => {
+  const files = req.files;
+  const attachArtwork = [];
+
+  try {
+    for (const file of files) {
+      const { path } = file;
+      try {
+        const uploader = await cloudinary.uploader.upload(path, {
+          folder: "Estate",
+        });
+        attachArtwork.push({ url: uploader.secure_url });
+        fs.unlinkSync(path);
+      } catch (err) {
+        if (attachArtwork?.length) {
+          const imgs = attachArtwork.map((obj) => obj.public_id);
+          cloudinary.api.delete_resources(imgs);
+        }
+        console.log(err);
+        throw err;
+      }
+    }
+
+    let pics = [];
+    for (let i = 0; i < attachArtwork.length; i++) {
+      const element = attachArtwork[i].url;
+      pics.push(element);
+    }
+
+    const updateData = req.body;
+
+    const addId = req.params.id;
+
+    // Find the Add by ID
+    const existingAdd = await Add.findById(addId);
+
+    if (!existingAdd) {
+      return res.status(404).json({
+        success: false,
+        message: "Add not found",
+      });
+    }
+
+    existingAdd.name = updateData.name || existingAdd.name;
+    existingAdd.address = updateData.address || existingAdd.address;
+    existingAdd.description = updateData.description || existingAdd.description;
+    existingAdd.price = updateData.price || existingAdd.price;
+    existingAdd.pics = pics || existingAdd.pics;
+    existingAdd.location = updateData.location || existingAdd.location;
+    existingAdd.propertyDetail =
+      updateData.propertyDetail || existingAdd.propertyDetail;
+    existingAdd.floorPlans = updateData.floorPlans || existingAdd.floorPlans;
+    existingAdd.createdByUser =
+      updateData.createdByUser || existingAdd.createdByUser;
+    existingAdd.createdByAgent =
+      updateData.createdByAgent || existingAdd.createdByAgent;
+    existingAdd.feature = updateData.feature || existingAdd.feature;
+
+    // Save the updated Add
+    const updatedAdd = await existingAdd.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Add updated successfully",
+      data: updatedAdd,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(400).send({ success: false, message: "Internal server error`" });
+    throw error;
+  }
+};
+
 const getAdd = async (req, res) => {
   try {
     const page = parseInt(req.query.page, 10) || 1;
@@ -178,6 +251,66 @@ const createFloorPlan = async (req, res) => {
   }
 };
 
+const updateFloorPlan = async (req, res) => {
+  try {
+    const files = req.files;
+    const attachArtwork = [];
+    if (files.length > 0) {
+      for (const file of files) {
+        const { path } = file;
+        try {
+          const uploader = await cloudinary.uploader.upload(path, {
+            folder: "Estate",
+          });
+          attachArtwork.push({ url: uploader.secure_url });
+          fs.unlinkSync(path);
+        } catch (err) {
+          if (attachArtwork?.length) {
+            const imgs = attachArtwork.map((obj) => obj.public_id);
+            cloudinary.api.delete_resources(imgs);
+          }
+          console.log(err);
+          throw err;
+        }
+      }
+    }
+    const updateData = req.body;
+
+    const floorPlansId = req.params.id;
+
+    const existingFloorPlan = await FloorPlans.findById(floorPlansId);
+
+    if (!existingFloorPlan) {
+      return res.status(404).json({
+        success: false,
+        message: "Floor plan not found",
+      });
+    }
+    if (attachArtwork.length > 0) {
+      existingFloorPlan.floorPlansPics = attachArtwork[0].url;
+    }
+    existingFloorPlan.totalSize =
+      updateData.totalSize || existingFloorPlan.totalSize;
+    existingFloorPlan.roomSize =
+      updateData.roomSize || existingFloorPlan.roomSize;
+    existingFloorPlan.washroomSize =
+      updateData.washroomSize || existingFloorPlan.washroomSize;
+    existingFloorPlan.prices = updateData.prices || existingFloorPlan.prices;
+
+    const updatedFloorPlan = await existingFloorPlan.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Floor plan updated successfully",
+      data: updatedFloorPlan,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(400).send({ success: false, message: "Internal server error`" });
+    throw error;
+  }
+};
+
 const getFloorPlan = async (req, res) => {
   try {
     const allFloorPlan = await FloorPlans.find();
@@ -240,10 +373,12 @@ const allFeature = async (req, res) => {
 
 module.exports = {
   createAdd,
+  updateAdd,
   getAdd,
   getOne,
   deleteAdd,
   createFloorPlan,
+  updateFloorPlan,
   getFloorPlan,
   CreateFeature,
   allFeature,

@@ -7,6 +7,8 @@ const {
   getAdd,
   deleteAdd,
   getOne,
+  updateAdd,
+  updateFloorPlan,
 } = require("../controllers/AddController");
 const { AddJoi, floorPlansJoi } = require("../utils/Schemas");
 const router = require("express").Router();
@@ -14,6 +16,7 @@ const upload = require("../helper/multer");
 
 // adds
 router.post("/create", upload.array("pics", 10), AddJoi, createAdd);
+router.put("/update/:id", upload.array("pics", 10), updateAdd);
 router.get("/all", getAdd);
 router.get("/one/:Id", getOne);
 router.delete("/delete/:Id", deleteAdd);
@@ -24,6 +27,12 @@ router.post(
   upload.array("floorPlansPics", 1),
   floorPlansJoi,
   createFloorPlan
+);
+router.put(
+  "/update/floor/:id",
+  upload.array("floorPlansPics", 1),
+  floorPlansJoi,
+  updateFloorPlan
 );
 router.get("/get/floor", getFloorPlan);
 
