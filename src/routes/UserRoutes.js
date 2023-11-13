@@ -11,6 +11,7 @@ const {
   allBroker,
   deleteBroker,
   oneBroker,
+  userFovt,
 } = require("../controllers/UserController");
 const { verifyUser, verifyBroker } = require("../middlewares/middlewares");
 const { UserJoi, BorkerJoi } = require("../utils/Schemas");
@@ -18,6 +19,7 @@ const router = require("express").Router();
 
 router.post("/register", UserJoi, registeredUser);
 router.post("/login", loginUser);
+router.get("/saved", verifyUser, userFovt);
 router.put("/update", verifyUser, updateUser);
 router.get("/all", allUser);
 router.get("/one/:Id", oneUser);

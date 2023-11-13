@@ -22,6 +22,12 @@ const userSchema = new mongoose.Schema(
     phone: {
       type: Number,
     },
+    fovt: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Adds",
+      },
+    ],
   },
   { timestamps: true }
 );

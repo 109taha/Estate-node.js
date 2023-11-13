@@ -2,7 +2,6 @@ const User = require("../models/UsersModels");
 const Broker = require("../models/BrokerModel");
 const JWT = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-const { userSchema } = require("../utils/Schemas");
 
 const registeredUser = async (req, res) => {
   try {
@@ -80,7 +79,7 @@ const loginUser = async (req, res) => {
 const updateUser = async (req, res) => {
   try {
     const userId = req.user;
-    const { first_name, last_name, email, password, phone } = req.body;
+    const { first_name, last_name, email, password, phone, fovt } = req.body;
     const user = await User.findById(userId);
 
     if (password) {
@@ -94,7 +93,8 @@ const updateUser = async (req, res) => {
     user.last_name = last_name || user.last_name;
     user.email = email || user.email;
     user.phone = phone || user.phone;
-
+    user.fovt = fovt || user.fovt;
+    await user.save();
     const token = JWT.sign({ userId: user._id }, process.env.JWT_SEC_USER);
 
     return res.status(200).send({
@@ -102,6 +102,55 @@ const updateUser = async (req, res) => {
       message: "User Update successfully",
       Token: token,
       Data: user,
+    });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .send({ success: false, message: "Internal server error" });
+  }
+};
+
+const userFovt = async (req, res) => {
+  try {
+    const userId = req.user;
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const skip = (page - 1) * limit;
+    const total = await User.countDocuments(userId).populate({
+      path: "fovt",
+      select: "pics address description price name",
+    });
+
+    let sortBY = { createdAt: -1 };
+    if (req.query.sort) {
+      sortBY = JSON.parse(req.query.sort);
+    }
+
+    const user = await User.findById(userId)
+      .populate({
+        path: "fovt",
+        select: "pics address description price name",
+      })
+      .skip(skip)
+      .limit(limit)
+      .sort(sortBY);
+    if (user.fovt.length <= 0) {
+      return res
+        .status(400)
+        .send({ success: false, message: "No saved Adds found" });
+    }
+
+    const totalPages = Math.ceil(total / limit);
+
+    res.status(200).send({
+      success: true,
+      message: "Following are all of the saved Adds",
+      data: user.fovt,
+      page,
+      totalPages,
+      limit,
+      total,
     });
   } catch (error) {
     console.error(error);
@@ -384,6 +433,7 @@ const deleteBroker = async (req, res) => {
 module.exports = {
   registeredUser,
   loginUser,
+  userFovt,
   updateUser,
   allUser,
   deleteUser,
