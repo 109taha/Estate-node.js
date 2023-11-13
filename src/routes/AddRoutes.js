@@ -10,6 +10,7 @@ const {
   updateAdd,
   updateFloorPlan,
   acceptUserAdds,
+  getPendingAdd,
 } = require("../controllers/AddController");
 const { AddJoi, floorPlansJoi } = require("../utils/Schemas");
 const router = require("express").Router();
@@ -21,6 +22,7 @@ router.post("/create", upload.array("pics", 10), AddJoi, createAdd);
 router.put("/liveAdd/:Id", verifyBroker, acceptUserAdds);
 router.put("/update/:id", upload.array("pics", 10), updateAdd);
 router.get("/all", getAdd);
+router.get("/pending", getPendingAdd);
 router.get("/one/:Id", getOne);
 router.delete("/delete/:Id", deleteAdd);
 
