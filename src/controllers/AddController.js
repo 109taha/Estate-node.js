@@ -38,9 +38,26 @@ const createAdd = async (req, res) => {
     }
 
     const newAddData = req.body;
+    if (newAddData.createdByUser) {
+      const newAdd = await Add({
+        ...newAddData,
+        pics,
+        addStatus: "Pending",
+      });
+
+      newAdd.save();
+
+      return res.status(200).send({
+        sucess: true,
+        message: "your add is added successfully",
+        data: newAdd,
+      });
+    }
+
     const newAdd = await Add({
       ...newAddData,
       pics,
+      addStatus: "LiveNow",
     });
 
     newAdd.save();
@@ -50,6 +67,27 @@ const createAdd = async (req, res) => {
       message: "your add is added successfully",
       data: newAdd,
     });
+  } catch (error) {
+    console.error(error);
+    res.status(400).send({ success: false, message: "Internal server error`" });
+    throw error;
+  }
+};
+
+const acceptUserAdds = async (req, res) => {
+  try {
+    const addId = req.params.Id;
+    const brokerId = req.user;
+
+    const add = await Add.findById(addId);
+    add.addStatus = "LiveNow";
+    add.createdByAgent = brokerId;
+
+    await add.save();
+
+    res
+      .status(200)
+      .send({ success: true, message: "Add accepted successfully", data: add });
   } catch (error) {
     console.error(error);
     res.status(400).send({ success: false, message: "Internal server error`" });
@@ -374,6 +412,7 @@ const allFeature = async (req, res) => {
 module.exports = {
   createAdd,
   updateAdd,
+  acceptUserAdds,
   getAdd,
   getOne,
   deleteAdd,

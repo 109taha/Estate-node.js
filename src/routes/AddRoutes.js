@@ -9,13 +9,16 @@ const {
   getOne,
   updateAdd,
   updateFloorPlan,
+  acceptUserAdds,
 } = require("../controllers/AddController");
 const { AddJoi, floorPlansJoi } = require("../utils/Schemas");
 const router = require("express").Router();
 const upload = require("../helper/multer");
+const { verifyBroker } = require("../middlewares/middlewares");
 
 // adds
 router.post("/create", upload.array("pics", 10), AddJoi, createAdd);
+router.put("/liveAdd/:Id", verifyBroker, acceptUserAdds);
 router.put("/update/:id", upload.array("pics", 10), updateAdd);
 router.get("/all", getAdd);
 router.get("/one/:Id", getOne);

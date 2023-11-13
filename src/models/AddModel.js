@@ -100,6 +100,12 @@ const AddSchema = new mongoose.Schema(
         ref: "Feature",
       },
     ],
+    addStatus: {
+      type: String,
+      enum: ["Pending", "LiveNow"],
+      require: true,
+      defualt: "Pending",
+    },
   },
   {
     timestamps: true,
