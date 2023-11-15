@@ -28,6 +28,8 @@ app.get("/", (req, res) => {
 
 const user = require("./routes/UserRoutes");
 const add = require("./routes/AddRoutes");
+const review = require("./routes/AddReviewRoutes");
 
 app.use("/user", user);
 app.use("/add", add);
+app.use("/review", review);

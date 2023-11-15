@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const AddReviewModel = mongoose.Schema(
   {
-    blogId: {
+    addId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Adds",
       require: true,
