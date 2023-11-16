@@ -168,11 +168,66 @@ const updateAdd = async (req, res) => {
   }
 };
 
+// const getAdd = async (req, res) => {
+//   try {
+//     const page = parseInt(req.query.page, 10) || 1;
+//     const limit = parseInt(req.query.limit, 10) || 10;
+//     const skip = (page - 1) * limit;
+//     const totalView = { $inc: { views: 1 } };
+
+//     let sortBY = { createdAt: -1 };
+//     if (req.query.sort) {
+//       sortBY = JSON.parse(req.query.sort);
+//     }
+
+//     const total = await Add.countDocuments({ addStatus: "LiveNow" });
+
+//     const allAdds = await Add.find({ addStatus: "LiveNow" })
+//       .select("pics address description price name")
+//       .skip(skip)
+//       .limit(limit)
+//       .sort(sortBY);
+
+//     const totalPages = Math.ceil(total / limit);
+
+//     if (allAdds.length <= 0) {
+//       return res.status(400).send({ success: false, message: "No Adds found" });
+//     }
+//     res.status(200).send({
+//       success: true,
+//       message: "Following are all the Adds",
+//       data: allAdds,
+//       page,
+//       totalPages,
+//       limit,
+//       total,
+//       totalView
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(400).send({ success: false, message: "Internal server error" });
+//     throw error;
+//   }
+// };
+
 const getAdd = async (req, res) => {
   try {
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 10;
     const skip = (page - 1) * limit;
+
+    // Find and update the document to increment views
+    const updatedAdd = await Add.findOneAndUpdate(
+      { addStatus: "LiveNow" },
+      { $inc: { views: 1 } },
+      { new: true } // Return the modified document
+    );
+
+    if (!updatedAdd) {
+      return res
+        .status(400)
+        .send({ success: false, message: "No matching Adds found" });
+    }
 
     let sortBY = { createdAt: -1 };
     if (req.query.sort) {
@@ -192,6 +247,7 @@ const getAdd = async (req, res) => {
     if (allAdds.length <= 0) {
       return res.status(400).send({ success: false, message: "No Adds found" });
     }
+
     res.status(200).send({
       success: true,
       message: "Following are all the Adds",
@@ -200,6 +256,7 @@ const getAdd = async (req, res) => {
       totalPages,
       limit,
       total,
+      totalView: updatedAdd.views,
     });
   } catch (error) {
     console.error(error);
@@ -250,9 +307,11 @@ const getPendingAdd = async (req, res) => {
 
 const getOne = async (req, res) => {
   try {
-    const oneAdd = await Add.findById(req.params.Id).populate(
-      "floorPlans createdByUser createdByAgent feature"
-    );
+    const oneAdd = await Add.findByIdAndUpdate(
+      { _id: req.params.Id },
+      { $inc: { views: 1 } },
+      { new: true }
+    ).populate("floorPlans createdByUser createdByAgent feature");
     if (!oneAdd) {
       return res
         .status(400)

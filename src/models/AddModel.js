@@ -106,6 +106,9 @@ const AddSchema = new mongoose.Schema(
       require: true,
       defualt: "Pending",
     },
+    views: {
+      type: Number,
+    },
   },
   {
     timestamps: true,
