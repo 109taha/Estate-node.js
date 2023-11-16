@@ -19,6 +19,9 @@ const BrokerSchema = new mongoose.Schema(
       type: String,
       require: true,
     },
+    profile_pic: {
+      type: String,
+    },
     phone: {
       type: Number,
     },

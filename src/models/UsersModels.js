@@ -22,6 +22,9 @@ const userSchema = new mongoose.Schema(
     phone: {
       type: Number,
     },
+    profile_pic: {
+      type: String,
+    },
     fovt: [
       {
         type: mongoose.Schema.Types.ObjectId,
